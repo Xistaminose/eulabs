@@ -12,7 +12,6 @@ import (
 func InitDB() (*sql.DB, string, error) {
 	dbType := os.Getenv("DB_TYPE")
 	var db *sql.DB
-	var err error
 
 	switch dbType {
 	case "postgres":
@@ -20,13 +19,9 @@ func InitDB() (*sql.DB, string, error) {
 		if connStr == "" {
 			connStr = "user=postgres password=postgres dbname=eulabs sslmode=disable"
 		}
-		db = InitPostgresDB()
+		db = InitPostgresDB(connStr)
 	default:
 		db = InitSQLiteDB()
-	}
-
-	if err != nil {
-		return nil, "", err
 	}
 
 	return db, dbType, nil
@@ -52,9 +47,8 @@ CREATE TABLE IF NOT EXISTS products (
 );
 `
 
-func InitPostgresDB() *sql.DB {
-	connStr := "user=postgres password=postgres dbname=eulabs sslmode=disable"
-	db, err := sql.Open("postgres", connStr)
+func InitPostgresDB(c string) *sql.DB {
+	db, err := sql.Open("postgres", c)
 	if err != nil {
 		log.Fatal(err)
 	}
