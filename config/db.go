@@ -2,6 +2,7 @@ package config
 
 import (
 	"database/sql"
+	"log"
 	"os"
 
 	_ "github.com/lib/pq"
@@ -19,9 +20,9 @@ func InitDB() (*sql.DB, string, error) {
 		if connStr == "" {
 			connStr = "user=postgres password=postgres dbname=eulabs sslmode=disable"
 		}
-		db, err = sql.Open("postgres", connStr)
+		db = InitPostgresDB()
 	default:
-		db, err = sql.Open("sqlite3", "./eulabs.db")
+		db = InitSQLiteDB()
 	}
 
 	if err != nil {
@@ -30,3 +31,44 @@ func InitDB() (*sql.DB, string, error) {
 
 	return db, dbType, nil
 }
+
+func InitSQLiteDB() *sql.DB {
+	db, err := sql.Open("sqlite3", "./eulabs.db")
+	if err != nil {
+		log.Fatal(err)
+	}
+	if _, err := db.Exec(sqliteSchema); err != nil {
+		log.Fatal(err)
+	}
+	return db
+}
+
+const sqliteSchema = `
+CREATE TABLE IF NOT EXISTS products (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT,
+    price REAL,
+    quantity INTEGER
+);
+`
+
+func InitPostgresDB() *sql.DB {
+	connStr := "user=postgres password=postgres dbname=eulabs sslmode=disable"
+	db, err := sql.Open("postgres", connStr)
+	if err != nil {
+		log.Fatal(err)
+	}
+	if _, err := db.Exec(postgresSchema); err != nil {
+		log.Fatal(err)
+	}
+	return db
+}
+
+const postgresSchema = `
+CREATE TABLE IF NOT EXISTS products (
+    id SERIAL PRIMARY KEY,
+    name TEXT,
+    price REAL,
+    quantity INTEGER
+);
+`

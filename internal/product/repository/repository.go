@@ -2,7 +2,6 @@ package repository
 
 import (
 	"database/sql"
-	"errors"
 	"eulabs/internal/entity"
 	"eulabs/internal/product/repository/postgresql"
 	"eulabs/internal/product/repository/sqlite"
@@ -20,9 +19,7 @@ func NewProductRepository(db *sql.DB, dbType string) (ProductRepository, error) 
 	switch dbType {
 	case "postgres":
 		return postgresql.NewProductRepository(db), nil
-	case "sqlite3":
-		return sqlite.NewProductRepository(db), nil
 	default:
-		return nil, errors.New("unsupported database type: " + dbType)
+		return sqlite.NewProductRepository(db), nil
 	}
 }
